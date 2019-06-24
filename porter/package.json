@@ -9,7 +9,7 @@
     "develop": "gulp watch"
   },
   "dependencies": {
-    "cosmiconfig": "^5.2.1",
+    "dotenv": "^8.0.0",
     "glob": "^7.1.4",
     "jsonfile": "^5.0.0",
     "pg": "^7.11.0",
