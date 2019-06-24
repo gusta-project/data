@@ -1,14 +1,35 @@
 {
-  "name": "porter",
-  "version": "1.0.0",
-  "description": "Convert JSON to SQL and import into DB",
-  "main": "index.js",
+  "name": "@gusta/porter",
+  "version": "0.1.0",
+  "description": "Import flavor data to Postgres",
+  "author": "ayan4m1 <andrew@bulletlogic.com>",
+  "license": "MIT",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "gulp",
+    "develop": "gulp watch"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "pg": "^7.11.0"
+    "cosmiconfig": "^5.2.1",
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/plugin-proposal-object-rest-spread": "^7.4.4",
+    "@babel/plugin-transform-regenerator": "^7.4.5",
+    "@babel/plugin-transform-runtime": "^7.4.4",
+    "@babel/preset-env": "^7.4.5",
+    "@babel/register": "^7.4.4",
+    "babel-eslint": "^10.0.2",
+    "eslint": "^6.0.0",
+    "eslint-config-prettier": "^5.0.0",
+    "eslint-plugin-import": "^2.17.3",
+    "eslint-plugin-prettier": "^3.1.0",
+    "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
+    "gulp-eslint": "^5.0.0",
+    "husky": "^2.4.1",
+    "lint-staged": "^8.2.1",
+    "prettier": "^1.18.2",
+    "prettier-eslint": "^9.0.0"
   }
 }
