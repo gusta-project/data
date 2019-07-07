@@ -9,6 +9,7 @@
     "develop": "gulp watch"
   },
   "dependencies": {
+    "dotenv": "^8.0.0",
     "winston": "^3.2.1"
   },
   "devDependencies": {
