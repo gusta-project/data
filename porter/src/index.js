@@ -56,7 +56,7 @@ const start = async () => {
   db.tx('bulk-insert', async t => {
     await t.none(
       `create temporary table new_vendor_temp
-          (vendor_id int default null, identifier text primary key, name varchar(200), slug varchar(200), code varchar(5))
+          (identifier text primary key, name varchar(200), slug varchar(200), code varchar(5))
         `
     );
     await t.none(
