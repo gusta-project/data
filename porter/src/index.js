@@ -86,52 +86,88 @@ const start = async () => {
         update vendor v
         set name = s.name, slug = s.slug, code = s.code
         from vendor_identifier vi
-          join s on vi.identifier = s.identifier
+        join s on vi.identifier = s.identifier
         where vi.vendor_id = v.id
         returning vi.identifier
       ), insert_vendor as (
         insert into vendor (id, name, slug, code)
-          select nextval('vendor_id_seq'), name, slug, code
+          select nextval('vendor_id_seq'), s.name, s.slug, s.code
           from s
-          where s.identifier not in (select identifier from update_vendor)
+          left join vendor v on
+            s.name = v.name
+            and s.code = v.code
+          where
+            v.id is null
+            and s.identifier not in (select identifier from update_vendor)
         returning currval('vendor_id_seq') id, name, slug, code
       )
       insert into vendor_identifier (vendor_id, data_supplier_id, identifier)
-        select iv.id, 2, nvt.identifier
+        select coalesce(v.id, iv.id), 2, nvt.identifier
         from new_vendor_temp nvt
-          join insert_vendor iv on
+          left join vendor_identifier vi on
+            nvt.identifier = vi.identifier
+            and vi.data_supplier_id = 2
+          left join vendor v on
+            nvt.name = v.name
+            and nvt.code = v.code
+          left join insert_vendor iv on
             nvt.name = iv.name
-            and nvt.slug = iv.slug
             and nvt.code = iv.code
+          where
+            (v.id is not null
+            or iv.id is not null)
+            and vi.identifier is null
       `);
     await t.none(`
       with s as (
-        select nft.*, vi.vendor_id
+        select
+          row_number() over (partition by vi.vendor_id, nft.name) ordinal,
+          nft.*,
+          vi.vendor_id
         from new_flavor_temp nft
-          join vendor_identifier vi
+        join vendor_identifier vi
           on vi.data_supplier_id = 2
           and nft.vendor_identifier = vi.identifier
       ), update_flavor as (
         update flavor f
         set name = s.name, slug = s.slug, density = s.density
         from flavor_identifier fi
-          join s on fi.identifier = s.identifier
+        join s on fi.identifier = s.identifier
         where fi.flavor_id = f.id
         returning fi.identifier
       ), insert_flavor as (
         insert into flavor (id, vendor_id, name, slug, density)
-          select nextval('flavor_id_seq'), vendor_id, name, slug, density
-          from s
-          where s.identifier not in (select identifier from update_flavor)
+          select nextval('flavor_id_seq'), so.vendor_id, so.name, so.slug, so.density
+          from (
+            select *
+            from s
+            where
+              s.ordinal = 1
+              and s.identifier not in (select identifier from update_flavor)
+          ) so
+          left join flavor f on so.vendor_id = f.vendor_id and so.name = f.name
+          where f.id is null
+        on conflict do nothing
         returning currval('flavor_id_seq') id, vendor_id, name, slug, density
       )
       insert into flavor_identifier (flavor_id, data_supplier_id, identifier)
-        select if.id, 2, nft.identifier
-        from new_flavor_temp nft
-          join insert_flavor if on
-            nft.name = if.name
-            and nft.slug = if.slug
-            and nft.density = if.density
+        select coalesce(f.id, if.id), 2, s.identifier
+        from s
+        left join flavor f on
+          s.vendor_id = f.vendor_id
+          and s.name = f.name
+        left join insert_flavor if on
+          s.vendor_id = if.vendor_id
+          and s.name = if.name
+        left join flavor_identifier fi on
+          (s.identifier = fi.identifier
+          or if.id = fi.flavor_id)
+          and fi.data_supplier_id = 2
+        where
+          (f.id is not null
+          or if.id is not null)
+          and s.ordinal = 1
+          and fi.identifier is null
       `);
 
     const endTime = process.hrtime(startTime);
