@@ -1,11 +1,19 @@
-import cosmiconfig from 'cosmiconfig';
+import dotenv from 'dotenv';
 
-const configSearch = cosmiconfig('port').searchSync();
+const result = dotenv.config();
 
-if (configSearch === null) {
-  throw new Error(
-    'Did not find a config file for module name "port" - see https://github.com/davidtheclark/cosmiconfig#explorersearch'
-  );
+if (result.error) {
+  throw result.error;
 }
 
-export default configSearch.config;
+const { env: config } = process;
+
+export default {
+  database: {
+    host: config.DB_HOST,
+    port: config.DB_PORT,
+    database: config.DB_NAME,
+    user: config.DB_USER,
+    password: config.DB_PASS
+  }
+};
